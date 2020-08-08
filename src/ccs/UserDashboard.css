@@ -1,0 +1,16 @@
+.border-green {
+  border-style: dotted;
+  border-width: 2px;
+  border-color: green;
+}
+.border-red {
+  border-style: dotted;
+  border-width: 2px;
+  border-color: red;
+}
+
+.fill-div {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
