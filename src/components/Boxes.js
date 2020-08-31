@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import '../ccs/Boxes.css'
+
 export default class Boxes extends Component {
   render() {
     const { boxes, style } = this.props
@@ -9,7 +10,7 @@ export default class Boxes extends Component {
           <img
             className={box.isAMatch ? 'match' : null}
             key={box.id}
-            src={box.value}
+            src={box.symbol}
             style={style}
             alt={box.id}
           />

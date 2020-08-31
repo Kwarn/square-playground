@@ -1,35 +1,18 @@
 /* FIX turnFinished 
   reconfig score to include pot/bet
 */
-
-import {
-  INCREMENT_BET,
-  DECREMENT_BET,
-  START_ROUND,
-  REVEAL_BOX,
-  REVEAL_BONUS_SYMBOL,
-  ADD_TO_SCORES,
-  SET_INSTANCE,
-  FIND_MATCHES,
-  CALC_TOTAL_SCORE,
-  CALC_FINAL_CHEST_RESULT,
-  NEXT_BONUS_ROUND,
-  NEW_ROUND,
-  calcTotalScore
-} from "../actions";
-import { produce, setAutoFreeze } from "immer";
-import Sound from "react-sound";
-import soundfile from "../sounds/slotmachine.mp3";
-import Cherries from "../images/cherries.jpg";
-import Coin from "../images/coin.jpg";
-import Banana from "../images/banana.jpg";
-import Poo from "../images/poo.jpg";
-import Diamond from "../images/diamond.jpg";
-import Jester from "../images/jester.jpg";
-import Fish from "../images/rottenfish.jpg";
-import Ticket from "../images/ticket.jpg";
-import Chest from "../images/chest.jpg";
-import FinalChest from "../images/finalchest.jpg";
+import * as actionTypes from '../actions'
+import { produce } from 'immer'
+import Cherries from '../images/cherries.jpg'
+import Coin from '../images/coin.jpg'
+import Banana from '../images/banana.jpg'
+import Poo from '../images/poo.jpg'
+import Diamond from '../images/diamond.jpg'
+import Jester from '../images/jester.jpg'
+import Fish from '../images/rottenfish.jpg'
+import Ticket from '../images/ticket.jpg'
+import Chest from '../images/chest.jpg'
+import FinalChest from '../images/finalchest.jpg'
 
 const initialState = {
   bank: 100,
@@ -51,7 +34,7 @@ const initialState = {
     { id: 4, symbol: Ticket },
     { id: 5, symbol: Chest },
     { id: 6, symbol: Chest },
-    { id: 7, symbol: FinalChest }
+    { id: 7, symbol: FinalChest },
   ],
   symbols: [
     { id: 0, symbol: Cherries },
@@ -63,180 +46,172 @@ const initialState = {
     { id: 6, symbol: Banana },
     { id: 7, symbol: Banana },
     { id: 8, symbol: Banana },
-    { id: 9, symbol: Poo }
+    { id: 9, symbol: Poo },
   ],
   bonusSymbols: [
     { id: 0, symbol: Diamond },
     { id: 1, symbol: Jester },
-    { id: 2, symbol: Fish }
+    { id: 2, symbol: Fish },
   ],
   scores: [
     { id: 0, total: 0, count: 0, worth: 3, symbol: Cherries },
     { id: 1, total: 0, count: 0, worth: 2, symbol: Coin },
     { id: 2, total: 0, count: 0, worth: 1.5, symbol: Banana },
-    { id: 3, total: 0, count: 0, worth: -5, symbol: Poo }
+    { id: 3, total: 0, count: 0, worth: -5, symbol: Poo },
   ],
   multiplierScores: [
     { id: 0, count: 0, worth: 0, symbol: Diamond },
     { id: 1, count: 0, worth: 0, symbol: Jester },
-    { id: 2, count: 0, worth: 0, symbol: Fish }
-  ]
-};
+    { id: 2, count: 0, worth: 0, symbol: Fish },
+  ],
+}
 
 export default (state, action) => {
   if (state === undefined) {
-    return initialState;
+    return initialState
   }
   switch (action.type) {
-    case "INCREMENT_BET":
+    case actionTypes.INCREMENT_BET:
       return produce(state, draft => {
-        draft.bet += action.incBet;
-      });
+        draft.bet += action.incBet
+      })
 
-    case "DECREMENT_BET":
+    case actionTypes.DECREMENT_BET:
       return produce(state, draft => {
-        draft.bet -= action.decBet;
-      });
+        draft.bet -= action.decBet
+      })
 
-    case "START_ROUND":
+    case actionTypes.START_ROUND:
       return produce(state, draft => {
-        draft.turnFinished = false;
-        draft.pot += draft.bet;
-        draft.bank -= draft.bet;
-        draft.roundStarted = true;
-        draft.bettingRound = false;
-      });
+        draft.turnFinished = false
+        draft.pot += draft.bet
+        draft.bank -= draft.bet
+        draft.roundStarted = true
+        draft.bettingRound = false
+      })
 
-    case "REVEAL_BOX":
+    case actionTypes.REVEAL_BOX:
       return produce(state, draft => {
         if (action.index < 7) {
           draft.boxes[action.index].symbol =
-            draft.symbols[action.indexFromRandom].symbol;
+            draft.symbols[action.indexFromRandom].symbol
         } else {
           draft.boxes[action.index].symbol =
-            draft.bonusSymbols[action.indexFromRandom].symbol;
+            draft.bonusSymbols[action.indexFromRandom].symbol
         }
-      });
+      })
 
-    case "ADD_TO_SCORES":
+    case actionTypes.ADD_TO_SCORES:
       return produce(state, draft => {
         for (let score of draft.scores) {
           if (score.symbol === draft.symbols[action.indexFromRandom].symbol) {
-            draft.scores[score.id].count += 1;
-            break;
+            draft.scores[score.id].count += 1
+            break
           }
         }
-      });
+      })
 
-    case "FIND_MATCHES":
+    case actionTypes.FIND_MATCHES:
       return produce(state, draft => {
-        draft.matchingScoreObjs = draft.scores.filter(score => score.count > 2);
+        draft.matchingScoreObjs = draft.scores.filter(score => score.count > 2)
         for (let mso of draft.matchingScoreObjs) {
           for (let box of draft.boxes) {
             if (box.symbol === mso.symbol) {
-              draft.boxes[box.id].isAMatch = true;
-              draft.numOfMatchesFound += 1;
+              draft.boxes[box.id].isAMatch = true
+              draft.numOfMatchesFound += 1
             }
           }
         }
-      });
+      })
 
-    case "CALC_TOTAL_SCORE":
+    case actionTypes.CALC_TOTAL_SCORE:
       function calcTotal() {
         produce(state, draft => {
-          let total = 0;
+          let total = 0
           for (let mso of draft.matchingScoreObjs) {
-            total = mso.worth * draft.bet;
+            total = mso.worth * draft.bet
             if (mso.count > 3) {
-              total += mso.worth * (mso.count - 3);
+              total += mso.worth * (mso.count - 3)
             }
-            let index = draft.matchingScoreObjs.indexOf(mso);
-            draft.matchingScoreObjs[index].total += total;
+            let index = draft.matchingScoreObjs.indexOf(mso)
+            draft.matchingScoreObjs[index].total += total
           }
-        });
+        })
       }
       function calculateTotal(mso, bet) {
-        let total = 0;
-        total = mso.worth * bet;
+        let total = 0
+        total = mso.worth * bet
         if (mso.count > 3) {
-          total += mso.worth * (mso.count - 3);
+          total += mso.worth * (mso.count - 3)
         }
-        return total;
+        return total
       }
       return produce(state, draft => {
         if (draft.matchingScoreObjs.length > 0) {
           if (draft.scores[3].count > 2) {
-            draft.totalScore = 0;
+            draft.totalScore = 0
           } else {
-            let total = 0;
+            let total = 0
             if (action.index === 4) {
               for (let mso of draft.matchingScoreObjs) {
-                total += calculateTotal(mso, draft.bet);
-                draft.scores[mso.id].total += total;
-                draft.totalScore += total;
+                total += calculateTotal(mso, draft.bet)
+                draft.scores[mso.id].total += total
+                draft.totalScore += total
               }
             } else {
               for (let mso of draft.matchingScoreObjs) {
                 if (draft.boxes[action.index].symbol === mso.symbol) {
-                  total += calculateTotal(mso, draft.bet);
-                  draft.scores[mso.id].total += total;
-                  draft.totalScore += total;
+                  total += calculateTotal(mso, draft.bet)
+                  draft.scores[mso.id].total += total
+                  draft.totalScore += total
                 }
               }
             }
           }
           draft.matchingScoreObjs = draft.scores.filter(
             score => score.count > 2
-          );
-
-          /* if (action.index === 6) {
-            if (draft.numOfMatchesFound === 7) {
-              draft.totalScore *= 2;
-            }
-          } */
+          )
         }
-      });
-    case "CALC_FINAL_SCORE":
-      return produce(state, draft => {});
+      })
 
-    case "CALC_FINAL_CHEST_RESULT":
+    case actionTypes.CALC_FINAL_CHEST_RESULT:
       return produce(state, draft => {
-        if (action.indexFromRandom === 0) draft.totalScore *= 2;
-      });
+        if (action.indexFromRandom === 0) draft.totalScore *= 2
+      })
 
-    case "NEW_ROUND":
+    case 'NEW_ROUND':
       return produce(state, draft => {
-        draft.bank += draft.totalScore;
-        draft.pot = 0;
-        draft.bet = 5;
-        draft.totalScore = 0;
-        draft.numOfMatchesFound = 0;
-        draft.roundStarted = false;
-        draft.bettingRound = true;
-        draft.bonusRound = false;
-        draft.boxes = initialState.boxes;
-        draft.scores = initialState.scores;
-        draft.multiplierScores = initialState.multiplierScores;
-        draft.matchingScoreObjs = [];
-      });
-    case "START_BETTING_ROUND":
+        draft.bank += draft.totalScore
+        draft.pot = 0
+        draft.bet = 5
+        draft.totalScore = 0
+        draft.numOfMatchesFound = 0
+        draft.roundStarted = false
+        draft.bettingRound = true
+        draft.bonusRound = false
+        draft.boxes = initialState.boxes
+        draft.scores = initialState.scores
+        draft.multiplierScores = initialState.multiplierScores
+        draft.matchingScoreObjs = []
+      })
+    case 'START_BETTING_ROUND':
       return produce(state, draft => {
-        draft.bettingRound = true;
-        draft.roundStarted = false;
-        draft.bet = 5;
-      });
-    case "NEXT_BONUS_ROUND":
+        draft.bettingRound = true
+        draft.roundStarted = false
+        draft.bet = 5
+      })
+    case 'NEXT_BONUS_ROUND':
       return produce(state, draft => {
-        draft.bonusRound += 1;
-      });
-    case "FINISH_TURN":
+        draft.bonusRound += 1
+      })
+    case 'FINISH_TURN':
       return produce(state, draft => {
-        draft.turnFinished = true;
-      });
+        draft.turnFinished = true
+      })
     default:
-      return state;
+      return state
   }
-};
+}
 /* case "SET_INSTANCE":
 return produce(state, draft => {
   let scoreObject = draft.scores.find(

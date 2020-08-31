@@ -7,7 +7,7 @@ import UserDashboard from "./components/UserDashboardContainer";
 
 class App extends Component {
   render() {
-    const {} = this.props;
+    // const {} = this.props;
     return (
       <div className="App">
         <div>

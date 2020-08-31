@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import Boxes from "./Boxes";
-import {} from "../actions/index";
+// import {} from "../actions/index";
 
 function mapStateToProps(state) {
   return {
